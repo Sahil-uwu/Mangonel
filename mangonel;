@@ -1,0 +1,91 @@
+#include <LiquidCrystal.h>
+#include <Servo.h>
+
+const int sPin = 7;
+double Dist;
+double Vel;
+int Ang;
+const float pi = 3.141592;
+
+                                                                                                        Servo myservo;
+const int ServoPin = 13;
+
+//Initializing the library with the numbers of the interface pins
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+
+void setup() 
+{
+  lcd.begin(16, 2);
+
+  pinMode(sPin, INPUT);
+                                                                                                        Serial.begin(9600);
+  
+                                                                                                            myservo.attach(ServoPin);
+}
+
+void loop() 
+{
+  //Multiplied by 0.01723 to convert microseconds to centimeter
+  Dist = 0.01723 * readUltrasonicDistance(sPin);
+  
+  lcd.setCursor(0, 0);
+  lcd.print("Dist:");
+  lcd.setCursor(0,1);
+  lcd.print(Dist);
+  
+ 	if(Dist <= 25)
+  {
+  	Ang=90;
+  }
+  else if(Dist > 25 && Dist <= 125)
+  {
+  	Ang=15;
+  }
+  else if(Dist > 225 && Dist <= 260)
+  {
+  	Ang=30;
+  }
+  else if(Dist > 295)
+  {
+  	Ang=45;
+  }
+  else if(Dist > 260 && Dist <= 295)
+  {
+  	Ang=60;
+  }
+  else if(Dist > 125 && Dist <=225)
+  {
+  	Ang=75;
+  }
+   
+  
+  myservo.write(Ang);
+  lcd.setCursor(7, 0);
+  lcd.print("Vel:");
+  lcd.setCursor(7,1);
+  lcd.print(sqrt((Dist*9.8)/sin(2*Ang*pi/180)));
+  
+  lcd.setCursor(13, 0);
+  lcd.print("Ang:");
+  lcd.setCursor(13,1);
+   lcd.print(Ang);
+  Serial.print("The angle of launch is: ");
+  Serial.print(Ang);
+  Serial.println();
+  delay(1000);
+}
+
+
+
+long readUltrasonicDistance(int pin)
+{
+  pinMode(pin, OUTPUT);  // Clear the trigger
+  digitalWrite(pin, LOW); // Trigger pin
+  delayMicroseconds(4); 
+  digitalWrite(pin, HIGH); // Trigger pin
+  delayMicroseconds(15);
+  digitalWrite(pin, LOW); // Trigger pin
+  pinMode(pin, INPUT);
+  // Reads the pin, and returns the sound wave travel time in microseconds
+  return pulseIn(pin, HIGH); //echo
+}
